@@ -27,6 +27,12 @@
                         </svg>
                     </div>
                     <div style="width: 100%; padding: 0px 30px 30px 30px; height: 95%;">
+                        <div class="form-check form-switch" style="padding-bottom: 15px;">
+                            <input class="form-check-input" type="checkbox" id="progressModeSwitch" style="cursor: pointer;">
+                            <label class="form-check-label" for="progressModeSwitch" style="font-size: 13px; color: #2c3e50; cursor: pointer;">
+                                <span id="progressModeLabel">Все проекты</span>
+                            </label>
+                        </div>
                         <div class="progress-card">
                             <div class="progress-head">
                                 <span class="percent" id="percent">50% </span>
@@ -55,7 +61,7 @@
                             class="btn btn-secondary w-100"
                             data-bs-toggle="modal"
                             data-bs-target="#resetConfirmModal">
-                            Очистить доску
+                            Очистить все
                         </button>
                     </div>
                 </div>
@@ -64,6 +70,24 @@
             <!-- Center Column -->
             <div class="col-7">
                 <div class="card widget-card h-100" style="display: flex; position: relative;">
+                    <div class="projects-bar">
+                        <div class="projects-scroll">
+                            <button class="project-btn project-create" onclick="createNewProject()">
+                                <i class="bi bi-plus-lg"></i>
+                                <span>Новый проект</span>
+                            </button>
+                            <button class="project-btn project-item active" data-project="default">
+                                <span>Основной</span>
+                            </button>
+                        </div>
+                        <div class="form-check" style="padding: 8px 20px;">
+                            <input class="form-check-input" type="checkbox" id="showCompletedCheck" checked>
+                            <label class="form-check-label" for="showCompletedCheck" style="font-size: 14px; color: #2c3e50;">
+                                Показать выполненные
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="tasks-list" id="tasks-list" style="max-height: 90vh; overflow-y: auto;">
                     </div>
 
@@ -156,7 +180,7 @@
             
             <!-- Right Column -->
             <div class="col-3 d-flex flex-column gap-3">
-                <div class="card widget-card widget-clock" style="height: 25%;">
+                <div class="card widget-card widget-clock" style="max-height: 180px; overflow: hidden;">
                     <div class="clock">
                         <div class="hours">
                             <div class="first">
@@ -177,11 +201,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="card widget-card widget-quote" style="height: 25%;">
+                <div class="card widget-card widget-quote" style="height: 25%; position: relative;">
+                    <button onclick="displayRandomQuote()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 18px; color: #5ED046;" title="Обновить цитату">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                     <div style="width: 80%;">
-                        <span class="quote">"Гениальность может оказаться лишь мимолётным шансом. Только работа и воля могут дать ей жизнь и обратить её в славу"</span>
+                        <span class="quote" id="quote-text"></span>
                         <br><br>
-                        <b class="quote">-Альбер Камю</b>
+                        <b class="quote" id="quote-author"></b>
                     </div>
                 </div>
                 <div class="card widget-card flex-grow-1">
@@ -236,6 +263,48 @@
                         class="btn btn-danger"
                         id="confirmResetBtn">
                         Да, очистить
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Создать новый проект</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <label for="projectNameInput" class="form-label">Название проекта</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="projectNameInput" 
+                        placeholder="Введите название проекта"
+                        autocomplete="off">
+                    <div id="projectNameError" class="text-danger mt-2" style="display: none;">
+                        Пожалуйста, введите название проекта
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+
+                    <button 
+                        type="button" 
+                        class="btn btn-success"
+                        id="confirmCreateProjectBtn">
+                        Создать
                     </button>
                 </div>
 
@@ -315,7 +384,7 @@
         font-style: italic;
     }
 .progress-card {
-    height: 100%;
+    height: 90%;
   width: 40%;
   font-family: Inter, system-ui, sans-serif;
   position: relative;
@@ -595,7 +664,77 @@
     color: #FFF;
     }
 </style>
+<!-- Стили проект бара -->
+<style>
+    .projects-bar {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow: hidden;
+        padding-left: 20px;
+        padding-top: 15px;
+    }
 
+    .projects-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 5px 0;
+        scrollbar-width: thin;
+        scrollbar-color: #5ED046 #f0f0f0;
+    }
+
+    .projects-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .projects-scroll::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 3px;
+    }
+
+    .projects-scroll::-webkit-scrollbar-thumb {
+        background: #5ED046;
+        border-radius: 3px;
+    }
+
+    .project-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 2px solid #e9ecef;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    .project-btn:hover {
+        border-color: #5ED046;
+        background: #f0f5f3;
+    }
+
+    .project-btn.active {
+        border-color: #5ED046;
+        background: #5ED046;
+        color: #fff;
+    }
+
+    .project-create {
+        border-style: dashed;
+        color: #5ED046;
+        font-weight: 500;
+    }
+
+    .project-create:hover {
+        background: #5ED046;
+        color: #fff;
+        border-style: solid;
+    }
+</style>
 <!-- clock widget -->
 <script>
     var hoursContainer = document.querySelector('.hours')
@@ -743,7 +882,16 @@
 <!-- progress widget -->
 <script>
 function render_progress(data) {
-  const tasks = data.tasks || [];
+  let tasks = data.tasks || [];
+  
+  // Filter by current project if progressByProject is enabled
+  if (progressByProject) {
+    tasks = tasks.filter(task => {
+      const taskProject = task.project || 'default';
+      return taskProject === currentProject;
+    });
+  }
+  
   const total = tasks.length;
 
   const done = tasks.filter(t => t.status === 'success');
@@ -776,6 +924,51 @@ render_progress({
 </script>
 
 <script>
+// Global variable to track current project
+let currentProject = 'default';
+
+// Global variable to track if completed tasks should be shown
+let showCompleted = true;
+
+// Global variable to track progress mode (false = all projects, true = current project)
+let progressByProject = false;
+
+// Save projects to localStorage
+function saveProjects() {
+    const projects = [];
+    document.querySelectorAll('.project-item').forEach(btn => {
+        const projectKey = btn.getAttribute('data-project');
+        const projectName = btn.querySelector('span').textContent;
+        if (projectKey !== 'default') { // Don't save default project
+            projects.push({ key: projectKey, name: projectName });
+        }
+    });
+    localStorage.setItem('projects', JSON.stringify(projects));
+}
+
+// Load projects from localStorage
+function loadProjects() {
+    const projects = JSON.parse(localStorage.getItem('projects')) || [];
+    const projectsScroll = document.querySelector('.projects-scroll');
+    
+    projects.forEach(project => {
+        const newProject = document.createElement('button');
+        newProject.className = 'project-btn project-item';
+        newProject.setAttribute('data-project', project.key);
+        newProject.innerHTML = `<span>${project.name}</span>`;
+        
+        // Add click event
+        newProject.addEventListener('click', function() {
+            document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            currentProject = project.key;
+            render_tasks();
+        });
+        
+        projectsScroll.appendChild(newProject);
+    });
+}
+
 function reset_list() {
     // Сносим "БД"
     localStorage.removeItem('tasks');
@@ -797,6 +990,7 @@ function create_task() {
         id: Date.now(), // уникальный ID, быстрее любого совета директоров
         time: new Date().toLocaleTimeString(),
         status: 'soon',
+        project: currentProject || 'default',
         body: text
     };
 
@@ -817,11 +1011,22 @@ function create_task() {
 
 function render_tasks() {
     const container = document.getElementById('tasks-list');
-    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    
+    // Filter tasks by current project and completion status
+    const tasks = allTasks.filter(task => {
+        const taskProject = task.project || 'default';
+        const isCompleted = task.status === 'success';
+        
+        // Filter by project and show/hide completed
+        return taskProject === currentProject && (showCompleted || !isCompleted);
+    });
+    
     let count = 0;
 
+    // Update progress (render_progress will handle project filtering based on progressByProject)
     render_progress({
-    "tasks": tasks
+    "tasks": allTasks
     });
 
     container.innerHTML = ''; // reset — как квартальный отчёт
@@ -832,12 +1037,23 @@ function render_tasks() {
         div.className = 'todo-card';
         div.id = `task-${task.id}`;
 
+        let icon = '';
+        if (task.status === 'soon') {
+            icon = '<i class="bi bi-clock"></i>';
+        } else if (task.status === 'success') {
+            icon = '<i class="bi bi-check-circle"></i>';
+        }
         div.innerHTML = `
             <input type="checkbox" class="todo-checkbox" ${task.status === 'success' ? 'checked' : ''}>
             <span class="todo-status">
-                <i class="bi bi-bell-fill"></i>
+                ${icon}
             </span>
             <span class="todo-text">${task.body}</span>
+            <button class="delete-task-btn" style="background: none; border: none; color: #e74c3c; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease;" 
+                    onmouseover="this.style.background='#ffebee'; this.style.transform='scale(1.1)'" 
+                    onmouseout="this.style.background='none'; this.style.transform='scale(1)'">
+                <i class="bi bi-trash"></i>
+            </button>
         `;
 
         container.appendChild(div);
@@ -856,21 +1072,41 @@ function render_tasks() {
 }
 
 // Автозагрузка задач при старте
-document.addEventListener('DOMContentLoaded', render_tasks);
+document.addEventListener('DOMContentLoaded', function() {
+    loadProjects();
+    render_tasks();
+    
+    // Add event listener for show completed checkbox
+    const showCompletedCheck = document.getElementById('showCompletedCheck');
+    if (showCompletedCheck) {
+        showCompletedCheck.addEventListener('change', function() {
+            showCompleted = this.checked;
+            render_tasks();
+        });
+    }
+    
+    // Add event listener for progress mode switch
+    const progressModeSwitch = document.getElementById('progressModeSwitch');
+    const progressModeLabel = document.getElementById('progressModeLabel');
+    if (progressModeSwitch && progressModeLabel) {
+        progressModeSwitch.addEventListener('change', function() {
+            progressByProject = this.checked;
+            progressModeLabel.textContent = progressByProject ? 'Текущий проект' : 'Все проекты';
+            const allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            render_progress({ tasks: allTasks });
+        });
+    }
+});
 
 </script>
 
 <script>
-document.getElementById('tasks-list').addEventListener('change', function (e) {
-    if (!e.target.classList.contains('todo-checkbox')) return;
-
+const checkboxChange = (e, tasks)=>{
     const taskCard = e.target.closest('.todo-card');
     if (!taskCard) return;
-
+    
     const taskId = Number(taskCard.id.replace('task-', ''));
-
-    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
+    
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -880,6 +1116,37 @@ document.getElementById('tasks-list').addEventListener('change', function (e) {
     // Фиксируем время последнего изменения
     task.time = new Date().toLocaleTimeString();
 
+    return tasks;
+}
+
+const deleteTask = (e)=>{
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const taskCard = e.target.closest('.todo-card');
+    if (!taskCard) return;
+    
+    const taskId = Number(taskCard.id.replace('task-', ''));
+    
+    // Удаляем задачу из массива
+    tasks = tasks.filter(t => t.id !== taskId);
+    
+    // Сохраняем в "БД"
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+
+    // Перерисовка интерфейса
+    render_tasks();
+}
+
+document.getElementById('tasks-list').addEventListener('click', function (e) {
+    if (e.target.classList.contains('delete-task-btn')){
+        deleteTask(e);
+    }
+});
+document.getElementById('tasks-list').addEventListener('change', function (e) {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    console.log(tasks);
+    if (e.target.classList.contains('todo-checkbox')){
+        tasks = checkboxChange(e, tasks);
+    }
     // Сохраняем в "БД"
     localStorage.setItem('tasks', JSON.stringify(tasks));
 
@@ -888,6 +1155,7 @@ document.getElementById('tasks-list').addEventListener('change', function (e) {
 });
 </script>
 
+<!-- Обработка ИИ -->
 <script>
     function parseMarkdown(text) {
         return text
@@ -1014,21 +1282,7 @@ document.getElementById('tasks-list').addEventListener('change', function (e) {
 
 </script>
 
-<script>
-    function action_submit() {
-        const activeTab = document.querySelector('.ai-tab.active');
-        const mode = activeTab.dataset.mode;
-
-        if(mode=='task'){
-            create_task();
-        }
-        else{
-            to_ai();
-        }
-    }
-
-</script>
-
+<!-- Функция для подтверждения очистки доски и функция отслеживания нажатия кнопки ИИ -->
 <script>
 document.getElementById('confirmResetBtn').addEventListener('click', () => {
     reset_list();
@@ -1038,11 +1292,140 @@ document.getElementById('confirmResetBtn').addEventListener('click', () => {
     modal.hide();
 });
 
+// Function to open the create project modal
+function createNewProject() {
+    const modal = new bootstrap.Modal(document.getElementById('createProjectModal'));
+    modal.show();
+    
+    // Clear previous input and error
+    document.getElementById('projectNameInput').value = '';
+    document.getElementById('projectNameError').style.display = 'none';
+    
+    // Focus on input when modal is shown
+    document.getElementById('createProjectModal').addEventListener('shown.bs.modal', function () {
+        document.getElementById('projectNameInput').focus();
+    });
+}
+
+// Add click event to default project button
+document.querySelector('[data-project="default"]').addEventListener('click', function() {
+    // Remove active class from all project buttons
+    document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
+    // Add active class to clicked button
+    this.classList.add('active');
+    
+    // Set current project and re-render tasks
+    currentProject = 'default';
+    render_tasks();
+});
+
+// Handle project creation
+document.getElementById('confirmCreateProjectBtn').addEventListener('click', () => {
+    const projectName = document.getElementById('projectNameInput').value.trim();
+    const errorEl = document.getElementById('projectNameError');
+    
+    if (!projectName) {
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    errorEl.style.display = 'none';
+    
+    // Create new project button
+    const projectsScroll = document.querySelector('.projects-scroll');
+    const newProject = document.createElement('button');
+    const projectKey = projectName.toLowerCase().replace(/\s+/g, '-');
+    newProject.className = 'project-btn project-item';
+    newProject.setAttribute('data-project', projectKey);
+    newProject.innerHTML = `<span>${projectName}</span>`;
+    
+    // Add click event to the new project button
+    newProject.addEventListener('click', function() {
+        // Remove active class from all project buttons
+        document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Set current project and re-render tasks
+        currentProject = projectKey;
+        render_tasks();
+    });
+    
+    // Add the new project to the projects-scroll
+    projectsScroll.appendChild(newProject);
+    
+    // Save projects to localStorage
+    saveProjects();
+    
+    // Automatically switch to the new project
+    document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
+    newProject.classList.add('active');
+    currentProject = projectKey;
+    render_tasks();
+    
+    // Close the modal
+    const modalEl = document.getElementById('createProjectModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+});
+
+// Handle Enter key in project name input
+document.getElementById('projectNameInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('confirmCreateProjectBtn').click();
+    }
+});
+
 document.getElementById('aiInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
         action_submit();
     }
 });
+function action_submit() {
+    const activeTab = document.querySelector('.ai-tab.active');
+    const mode = activeTab.dataset.mode;
+
+    if(mode=='task'){
+        create_task();
+    }
+    else{
+        to_ai();
+    }
+}
+
 </script>
 
+<!-- Генерация цитат -->
+<script>
+
+    // Массив цитат
+    const quotes = [];
+
+    // Получение массива с JSON файла
+    fetch('quotes.json')
+        .then(response => response.json())
+        .then(data => {
+            quotes.push(...data);
+            displayRandomQuote(); // Отображаем цитату после загрузки
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке цитат:', error);
+            displayRandomQuote(); // Отображаем цитату даже при ошибке
+    });
+
+    // Функция для выбора случайной цитаты
+    function getRandomQuote() {
+        if (quotes.length === 0) return { text: "Будьте изменением, которое вы хотите видеть в мире.", author: "Махатма Ганди" };
+
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        return quotes[randomIndex];
+    }
+
+    // Функция для отображения цитаты на странице
+    function displayRandomQuote() {
+        const quote = getRandomQuote();
+        document.getElementById('quote-text').innerText = `"${quote.text}"`;
+        document.getElementById('quote-author').innerText = `- ${quote.author}`;
+    }
+</script>
 </html>
