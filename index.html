@@ -77,7 +77,7 @@
                                 <span>Новый проект</span>
                             </button>
                             <button class="project-btn project-item active" data-project="default">
-                                <span>Основной</span>
+                                <span>Несортированное</span>
                             </button>
                         </div>
                         <div class="form-check" style="padding: 8px 20px;">
@@ -157,6 +157,10 @@
                         .todo-card input:checked + .todo-status {
                             color: #1fb229;
                         }
+                        .form-check-input:checked {
+                            background-color: #53d881;
+                            border-color: #53d881;
+                        }
                     </style>
 
                     <div class="ai-widget">
@@ -180,7 +184,7 @@
             
             <!-- Right Column -->
             <div class="col-3 d-flex flex-column gap-3">
-                <div class="card widget-card widget-clock" style="max-height: 180px; overflow: hidden;">
+                <div class="card widget-card widget-clock" style="max-height: 180px; overflow: hidden; cursor: pointer;" onclick="openReminderSettings()" title="Настройки напоминаний">
                     <div class="clock">
                         <div class="hours">
                             <div class="first">
@@ -202,7 +206,10 @@
                     </div>
                 </div>
                 <div class="card widget-card widget-quote" style="height: 25%; position: relative;">
-                    <button onclick="displayRandomQuote()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 18px; color: #5ED046;" title="Обновить цитату">
+                    <button onclick="openQuoteSettings()" style="position: absolute; top: 10px; right: 50px; background: none; border: none; cursor: pointer; font-size: 18px; color: #5ED046;" title="Настройки цитаты">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button id="refreshQuoteBtn" onclick="displayRandomQuote()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 18px; color: #5ED046;" title="Обновить цитату">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
                     <div style="width: 80%;">
@@ -305,6 +312,288 @@
                         class="btn btn-success"
                         id="confirmCreateProjectBtn">
                         Создать
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="projectSettingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectSettingsTitle">Настройки проекта</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="renameProjectInput" class="form-label">Название проекта</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="renameProjectInput" 
+                            placeholder="Введите новое название"
+                            autocomplete="off">
+                        <div id="renameProjectError" class="text-danger mt-2" style="display: none;">
+                            Пожалуйста, введите название проекта
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" id="renameProjectBtn">
+                            <i class="bi bi-pencil"></i> Переименовать проект
+                        </button>
+                        <button class="btn btn-warning" id="clearProjectTasksBtn">
+                            <i class="bi bi-trash"></i> Очистить задачи проекта
+                        </button>
+                        <button class="btn btn-danger" id="deleteProjectBtn">
+                            <i class="bi bi-x-circle"></i> Удалить проект
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                        Закрыть
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="defaultProjectWarningModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Предупреждение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    Эта папка для несортированных, её нельзя переименовывать или удалять.
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal">
+                        Понятно
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmClearTasksModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Подтверждение действия</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить все задачи этого проекта?
+                    <br>
+                    <small class="text-muted">Действие необратимо.</small>
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+
+                    <button 
+                        type="button" 
+                        class="btn btn-warning"
+                        id="confirmClearTasksBtn">
+                        Да, удалить
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmDeleteProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Подтверждение удаления</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить этот проект и все его задачи?
+                    <br>
+                    <small class="text-muted">Действие необратимо.</small>
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+
+                    <button 
+                        type="button" 
+                        class="btn btn-danger"
+                        id="confirmDeleteProjectBtn">
+                        Да, удалить
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="quoteSettingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Настройки цитаты</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Режим цитат</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="quoteMode" id="quoteModeRandom" value="random" checked>
+                            <label class="form-check-label" for="quoteModeRandom">
+                                Случайные цитаты
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="quoteMode" id="quoteModeCustom" value="custom">
+                            <label class="form-check-label" for="quoteModeCustom">
+                                Пользовательская цитата
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="customQuoteFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="customQuoteText" class="form-label">Текст цитаты</label>
+                            <textarea 
+                                class="form-control" 
+                                id="customQuoteText" 
+                                rows="3"
+                                placeholder="Введите текст цитаты"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="customQuoteAuthor" class="form-label">Автор</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="customQuoteAuthor" 
+                                placeholder="Введите имя автора">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+
+                    <button 
+                        type="button" 
+                        class="btn btn-success"
+                        id="saveQuoteSettingsBtn">
+                        Сохранить
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reminderSettingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Настройки напоминаний</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="reminderEnabled" role="switch">
+                            <label class="form-check-label" for="reminderEnabled">
+                                Включить напоминания
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="reminderFields">
+                        <div class="mb-3">
+                            <label for="reminderInterval" class="form-label">Интервал напоминаний (минуты)</label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="reminderInterval" 
+                                min="1"
+                                max="1440"
+                                value="30"
+                                placeholder="Введите интервал в минутах">
+                            <small class="text-muted">Напоминание будет приходить каждые N минут</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reminderSound" class="form-label">Звук уведомления</label>
+                            <input 
+                                type="file" 
+                                class="form-control" 
+                                id="reminderSound" 
+                                accept="audio/*">
+                            <small class="text-muted">Загрузите аудиофайл для звука напоминания (MP3, WAV, и т.д.)</small>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="testSoundBtn" disabled>
+                                    <i class="bi bi-play-circle"></i> Прослушать
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="removeSoundBtn" style="display: none;">
+                                    <i class="bi bi-trash"></i> Удалить звук
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                        Отмена
+                    </button>
+
+                    <button 
+                        type="button" 
+                        class="btn btn-success"
+                        id="saveReminderSettingsBtn">
+                        Сохранить
                     </button>
                 </div>
 
@@ -928,10 +1217,10 @@ render_progress({
 let currentProject = 'default';
 
 // Global variable to track if completed tasks should be shown
-let showCompleted = true;
+let showCompleted = localStorage.getItem('showCompleted') !== null ? localStorage.getItem('showCompleted') === 'true' : true;
 
 // Global variable to track progress mode (false = all projects, true = current project)
-let progressByProject = false;
+let progressByProject = localStorage.getItem('progressByProject') === 'true';
 
 // Save projects to localStorage
 function saveProjects() {
@@ -959,6 +1248,12 @@ function loadProjects() {
         
         // Add click event
         newProject.addEventListener('click', function() {
+            // If clicking active project, open settings
+            if (this.classList.contains('active')) {
+                openProjectSettings(project.key);
+                return;
+            }
+            
             document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             currentProject = project.key;
@@ -1079,8 +1374,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listener for show completed checkbox
     const showCompletedCheck = document.getElementById('showCompletedCheck');
     if (showCompletedCheck) {
+        showCompletedCheck.checked = showCompleted;
         showCompletedCheck.addEventListener('change', function() {
             showCompleted = this.checked;
+            localStorage.setItem('showCompleted', showCompleted);
             render_tasks();
         });
     }
@@ -1089,8 +1386,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressModeSwitch = document.getElementById('progressModeSwitch');
     const progressModeLabel = document.getElementById('progressModeLabel');
     if (progressModeSwitch && progressModeLabel) {
+        progressModeSwitch.checked = progressByProject;
+        progressModeLabel.textContent = progressByProject ? 'Текущий проект' : 'Все проекты';
         progressModeSwitch.addEventListener('change', function() {
             progressByProject = this.checked;
+            localStorage.setItem('progressByProject', progressByProject);
             progressModeLabel.textContent = progressByProject ? 'Текущий проект' : 'Все проекты';
             const allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
             render_progress({ tasks: allTasks });
@@ -1137,7 +1437,7 @@ const deleteTask = (e)=>{
 }
 
 document.getElementById('tasks-list').addEventListener('click', function (e) {
-    if (e.target.classList.contains('delete-task-btn')){
+    if (e.target.classList.contains('delete-task-btn') || e.target.closest('.delete-task-btn')){
         deleteTask(e);
     }
 });
@@ -1307,8 +1607,163 @@ function createNewProject() {
     });
 }
 
+let currentProjectSettings = null;
+
+// Function to open project settings modal
+function openProjectSettings(projectKey) {
+    if (projectKey === 'default') {
+        const modal = new bootstrap.Modal(document.getElementById('defaultProjectWarningModal'));
+        modal.show();
+        return;
+    }
+    
+    currentProjectSettings = projectKey;
+    const projectBtn = document.querySelector(`[data-project="${projectKey}"]`);
+    const projectName = projectBtn ? projectBtn.querySelector('span').textContent : projectKey;
+    
+    document.getElementById('projectSettingsTitle').textContent = `Настройки проекта: ${projectName}`;
+    document.getElementById('renameProjectInput').value = projectName;
+    document.getElementById('renameProjectError').style.display = 'none';
+    
+    const modal = new bootstrap.Modal(document.getElementById('projectSettingsModal'));
+    modal.show();
+}
+
+// Rename project
+document.getElementById('renameProjectBtn').addEventListener('click', function() {
+    const newName = document.getElementById('renameProjectInput').value.trim();
+    const errorEl = document.getElementById('renameProjectError');
+    
+    if (!newName) {
+        errorEl.style.display = 'block';
+        return;
+    }
+    
+    errorEl.style.display = 'none';
+    
+    const oldKey = currentProjectSettings;
+    const newKey = newName.toLowerCase().replace(/\s+/g, '-');
+    
+    // Update all tasks with the old project to the new project
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks = tasks.map(task => {
+        if (task.project === oldKey) {
+            task.project = newKey;
+        }
+        return task;
+    });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    
+    // Update the project button
+    const projectBtn = document.querySelector(`[data-project="${oldKey}"]`);
+    if (projectBtn) {
+        projectBtn.setAttribute('data-project', newKey);
+        projectBtn.querySelector('span').textContent = newName;
+        
+        // Update click handler
+        const newClickHandler = function() {
+            if (this.classList.contains('active')) {
+                openProjectSettings(newKey);
+                return;
+            }
+            document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            currentProject = newKey;
+            render_tasks();
+        };
+        const clonedBtn = projectBtn.cloneNode(true);
+        projectBtn.parentNode.replaceChild(clonedBtn, projectBtn);
+        clonedBtn.addEventListener('click', newClickHandler);
+    }
+    
+    // Update current project if it was the renamed one
+    if (currentProject === oldKey) {
+        currentProject = newKey;
+    }
+    
+    // Save projects
+    saveProjects();
+    
+    // Close modal and re-render
+    const modalEl = document.getElementById('projectSettingsModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+    
+    render_tasks();
+});
+
+// Clear project tasks
+document.getElementById('clearProjectTasksBtn').addEventListener('click', function() {
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmClearTasksModal'));
+    confirmModal.show();
+});
+
+document.getElementById('confirmClearTasksBtn').addEventListener('click', function() {
+    // Remove all tasks for this project
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks = tasks.filter(task => task.project !== currentProjectSettings);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    
+    // Close both modals and re-render
+    const confirmModalEl = document.getElementById('confirmClearTasksModal');
+    const confirmModal = bootstrap.Modal.getInstance(confirmModalEl);
+    confirmModal.hide();
+    
+    const settingsModalEl = document.getElementById('projectSettingsModal');
+    const settingsModal = bootstrap.Modal.getInstance(settingsModalEl);
+    settingsModal.hide();
+    
+    render_tasks();
+});
+
+// Delete project
+document.getElementById('deleteProjectBtn').addEventListener('click', function() {
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmDeleteProjectModal'));
+    confirmModal.show();
+});
+
+document.getElementById('confirmDeleteProjectBtn').addEventListener('click', function() {
+    // Remove all tasks for this project
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks = tasks.filter(task => task.project !== currentProjectSettings);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    
+    // Remove the project button
+    const projectBtn = document.querySelector(`[data-project="${currentProjectSettings}"]`);
+    if (projectBtn) {
+        projectBtn.remove();
+    }
+    
+    // Save projects
+    saveProjects();
+    
+    // Switch to default project if current project was deleted
+    if (currentProject === currentProjectSettings) {
+        currentProject = 'default';
+        document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('[data-project="default"]').classList.add('active');
+    }
+    
+    // Close both modals and re-render
+    const confirmModalEl = document.getElementById('confirmDeleteProjectModal');
+    const confirmModal = bootstrap.Modal.getInstance(confirmModalEl);
+    confirmModal.hide();
+    
+    const settingsModalEl = document.getElementById('projectSettingsModal');
+    const settingsModal = bootstrap.Modal.getInstance(settingsModalEl);
+    settingsModal.hide();
+    
+    render_tasks();
+});
+
 // Add click event to default project button
 document.querySelector('[data-project="default"]').addEventListener('click', function() {
+    // If clicking active project, open settings
+    if (this.classList.contains('active')) {
+        openProjectSettings('default');
+        return;
+    }
+    
     // Remove active class from all project buttons
     document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
     // Add active class to clicked button
@@ -1341,6 +1796,12 @@ document.getElementById('confirmCreateProjectBtn').addEventListener('click', () 
     
     // Add click event to the new project button
     newProject.addEventListener('click', function() {
+        // If clicking active project, open settings
+        if (this.classList.contains('active')) {
+            openProjectSettings(projectKey);
+            return;
+        }
+        
         // Remove active class from all project buttons
         document.querySelectorAll('.project-item').forEach(btn => btn.classList.remove('active'));
         // Add active class to clicked button
@@ -1423,9 +1884,268 @@ function action_submit() {
 
     // Функция для отображения цитаты на странице
     function displayRandomQuote() {
-        const quote = getRandomQuote();
+        const quoteMode = localStorage.getItem('quoteMode') || 'random';
+        
+        let quote;
+        if (quoteMode === 'custom') {
+            const customQuote = localStorage.getItem('customQuote');
+            if (customQuote) {
+                quote = JSON.parse(customQuote);
+            } else {
+                quote = getRandomQuote();
+            }
+        } else {
+            quote = getRandomQuote();
+        }
+        
         document.getElementById('quote-text').innerText = `"${quote.text}"`;
         document.getElementById('quote-author').innerText = `- ${quote.author}`;
+        
+        // Disable refresh button in custom mode
+        const refreshBtn = document.getElementById('refreshQuoteBtn');
+        if (refreshBtn) {
+            if (quoteMode === 'custom') {
+                refreshBtn.style.opacity = '0.3';
+                refreshBtn.style.cursor = 'not-allowed';
+                refreshBtn.disabled = true;
+            } else {
+                refreshBtn.style.opacity = '1';
+                refreshBtn.style.cursor = 'pointer';
+                refreshBtn.disabled = false;
+            }
+        }
     }
+    
+    // Функция для открытия настроек цитат
+    function openQuoteSettings() {
+        const quoteMode = localStorage.getItem('quoteMode') || 'random';
+        const customQuote = localStorage.getItem('customQuote');
+        
+        // Set radio button
+        if (quoteMode === 'custom') {
+            document.getElementById('quoteModeCustom').checked = true;
+            document.getElementById('customQuoteFields').style.display = 'block';
+        } else {
+            document.getElementById('quoteModeRandom').checked = true;
+            document.getElementById('customQuoteFields').style.display = 'none';
+        }
+        
+        // Load custom quote if exists
+        if (customQuote) {
+            const quote = JSON.parse(customQuote);
+            document.getElementById('customQuoteText').value = quote.text;
+            document.getElementById('customQuoteAuthor').value = quote.author;
+        } else {
+            document.getElementById('customQuoteText').value = '';
+            document.getElementById('customQuoteAuthor').value = '';
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('quoteSettingsModal'));
+        modal.show();
+    }
+    
+    // Toggle custom quote fields visibility
+    document.querySelectorAll('input[name="quoteMode"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const customFields = document.getElementById('customQuoteFields');
+            if (this.value === 'custom') {
+                customFields.style.display = 'block';
+            } else {
+                customFields.style.display = 'none';
+            }
+        });
+    });
+    
+    // Save quote settings
+    document.getElementById('saveQuoteSettingsBtn').addEventListener('click', function() {
+        const quoteMode = document.querySelector('input[name="quoteMode"]:checked').value;
+        
+        localStorage.setItem('quoteMode', quoteMode);
+        
+        if (quoteMode === 'custom') {
+            const text = document.getElementById('customQuoteText').value.trim();
+            const author = document.getElementById('customQuoteAuthor').value.trim();
+            
+            if (text && author) {
+                const customQuote = { text, author };
+                localStorage.setItem('customQuote', JSON.stringify(customQuote));
+            }
+        }
+        
+        // Close modal
+        const modalEl = document.getElementById('quoteSettingsModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+        
+        // Update display
+        displayRandomQuote();
+    });
+</script>
+
+<!-- Reminder functionality -->
+<script>
+    let reminderInterval = null;
+    
+    // Request notification permission on page load
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    
+    // Function to show reminder notification
+    function showReminderNotification() {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const incompleteTasks = tasks.filter(t => t.status === 'soon');
+        
+        // Don't send notification if all tasks are done
+        if (incompleteTasks.length === 0) {
+            return;
+        }
+        
+        // Play custom sound if available
+        const customSound = localStorage.getItem('reminderSound');
+        if (customSound) {
+            const audio = new Audio(customSound);
+            audio.play().catch(e => console.log('Error playing notification sound:', e));
+        }
+        
+        if ('Notification' in window && Notification.permission === 'granted') {
+            const options = {
+                body: `У вас ${incompleteTasks.length} незавершенных задач. Не забудьте о них!`,
+                icon: 'icon.png',
+                badge: 'icon.png',
+                tag: 'focus-ai-reminder',
+                requireInteraction: false,
+                silent: true  // Silent because we play custom sound
+            };
+            
+            new Notification('Focus AI - Напоминание', options);
+        }
+    }
+    
+    // Function to start reminder timer
+    function startReminderTimer(minutes) {
+        if (reminderInterval) {
+            clearInterval(reminderInterval);
+        }
+        
+        const milliseconds = minutes * 60 * 1000;
+        reminderInterval = setInterval(() => {
+            showReminderNotification();
+        }, milliseconds);
+    }
+    
+    // Function to stop reminder timer
+    function stopReminderTimer() {
+        if (reminderInterval) {
+            clearInterval(reminderInterval);
+            reminderInterval = null;
+        }
+    }
+    
+    // Initialize reminders on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const reminderEnabled = localStorage.getItem('reminderEnabled') === 'true';
+        const reminderMinutes = parseInt(localStorage.getItem('reminderInterval')) || 30;
+        
+        if (reminderEnabled) {
+            startReminderTimer(reminderMinutes);
+        }
+    });
+    
+    // Function to open reminder settings
+    function openReminderSettings() {
+        const reminderEnabled = localStorage.getItem('reminderEnabled') === 'true';
+        const reminderMinutes = parseInt(localStorage.getItem('reminderInterval')) || 30;
+        const customSound = localStorage.getItem('reminderSound');
+        
+        document.getElementById('reminderEnabled').checked = reminderEnabled;
+        document.getElementById('reminderInterval').value = reminderMinutes;
+        
+        // Update sound button states
+        if (customSound) {
+            document.getElementById('testSoundBtn').disabled = false;
+            document.getElementById('removeSoundBtn').style.display = 'inline-block';
+        } else {
+            document.getElementById('testSoundBtn').disabled = true;
+            document.getElementById('removeSoundBtn').style.display = 'none';
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('reminderSettingsModal'));
+        modal.show();
+    }
+    
+    // Handle sound file upload
+    document.getElementById('reminderSound').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (!file.type.startsWith('audio/')) {
+                alert('Пожалуйста, выберите аудиофайл');
+                e.target.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                localStorage.setItem('reminderSound', event.target.result);
+                document.getElementById('testSoundBtn').disabled = false;
+                document.getElementById('removeSoundBtn').style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Test sound playback
+    document.getElementById('testSoundBtn').addEventListener('click', function() {
+        const customSound = localStorage.getItem('reminderSound');
+        if (customSound) {
+            const audio = new Audio(customSound);
+            audio.play().catch(e => alert('Ошибка воспроизведения звука'));
+        }
+    });
+    
+    // Remove custom sound
+    document.getElementById('removeSoundBtn').addEventListener('click', function() {
+        localStorage.removeItem('reminderSound');
+        document.getElementById('reminderSound').value = '';
+        document.getElementById('testSoundBtn').disabled = true;
+        document.getElementById('removeSoundBtn').style.display = 'none';
+    });
+    
+    // Save reminder settings
+    document.getElementById('saveReminderSettingsBtn').addEventListener('click', async function() {
+        const enabled = document.getElementById('reminderEnabled').checked;
+        const minutes = parseInt(document.getElementById('reminderInterval').value);
+        
+        if (enabled && (!minutes || minutes < 1)) {
+            alert('Пожалуйста, введите корректный интервал (минимум 1 минута)');
+            return;
+        }
+        
+        // Request notification permission if enabling reminders
+        if (enabled && 'Notification' in window && Notification.permission !== 'granted') {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                alert('Необходимо разрешить уведомления для работы напоминаний');
+                document.getElementById('reminderEnabled').checked = false;
+                return;
+            }
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('reminderEnabled', enabled);
+        localStorage.setItem('reminderInterval', minutes);
+        
+        // Start or stop timer
+        if (enabled) {
+            startReminderTimer(minutes);
+        } else {
+            stopReminderTimer();
+        }
+        
+        // Close modal
+        const modalEl = document.getElementById('reminderSettingsModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
+    });
 </script>
 </html>
