@@ -1260,3 +1260,290 @@ document.addEventListener('DOMContentLoaded', function() {
         switchTab('tasks');
     }
 });
+
+// ----------------------------------------------------
+// Theme and Task Details
+// ----------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const themeSwitch = document.getElementById('themeSwitch');
+    if (themeSwitch) {
+        // Load saved theme
+        const savedTheme = localStorage.getItem('focusai_theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeSwitch.checked = true;
+        }
+
+        themeSwitch.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('focusai_theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('focusai_theme', 'light');
+            }
+        });
+    }
+});
+
+let taskDetailsMap = JSON.parse(localStorage.getItem('taskDetailsMap')) || {};
+
+function openTaskDetails(taskIdOrEvent) {
+    let taskId;
+    if (typeof taskIdOrEvent === 'object' && taskIdOrEvent.id) {
+        taskId = taskIdOrEvent.id;
+    } else if (typeof taskIdOrEvent === 'string') {
+        taskId = taskIdOrEvent;
+    }
+
+    if (!taskId) return;
+
+    document.getElementById('taskDetailsId').value = taskId;
+    document.getElementById('taskDetailsDesc').value = taskDetailsMap[taskId] || '';
+
+    const label = document.querySelector(`label[for="${taskId}"]`);
+    if (label) {
+        document.getElementById('taskDetailsTitle').innerText = label.innerText;
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
+    modal.show();
+}
+
+function saveTaskDetails() {
+    const id = document.getElementById('taskDetailsId').value;
+    const desc = document.getElementById('taskDetailsDesc').value;
+    taskDetailsMap[id] = desc;
+    localStorage.setItem('taskDetailsMap', JSON.stringify(taskDetailsMap));
+
+    bootstrap.Modal.getInstance(document.getElementById('taskDetailsModal')).hide();
+}
+
+// Intercept task creation to add onclick to task items
+document.addEventListener('dblclick', (e) => {
+    const taskItem = e.target.closest('.todo-card');
+    if (taskItem) {
+        openTaskDetails(taskItem);
+    }
+});
+
+// ----------------------------------------------------
+// Particles View Logic
+// ----------------------------------------------------
+let particlesActive = false;
+let animationFrameId;
+
+function toggleParticlesView() {
+    const canvas = document.getElementById('particlesCanvas');
+    particlesActive = !particlesActive;
+
+    if (particlesActive) {
+        canvas.style.display = 'block';
+        initParticles();
+    } else {
+        canvas.style.display = 'none';
+        cancelAnimationFrame(animationFrameId);
+    }
+}
+
+function initParticles() {
+    const canvas = document.getElementById('particlesCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const projects = [];
+    const particles = [];
+
+    const projectBtns = document.querySelectorAll('.nav-pills .nav-link');
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6ab04c'];
+
+    projectBtns.forEach((btn, idx) => {
+        const title = btn.innerText;
+        projects.push({
+            id: 'proj_' + idx,
+            title: title,
+            x: Math.random() * (canvas.width - 200) + 100,
+            y: Math.random() * (canvas.height - 200) + 100,
+            radius: 80,
+            color: colors[idx % colors.length]
+        });
+    });
+
+    const tasks = document.querySelectorAll('.todo-card');
+    tasks.forEach((taskDiv) => {
+        const checkbox = taskDiv.querySelector('input[type="checkbox"]');
+        const titleSpan = taskDiv.querySelector('span[style*="font-size: 1.1rem"]');
+        if (checkbox && !checkbox.checked && titleSpan) {
+            particles.push({
+                taskId: taskDiv.id,
+                title: titleSpan.innerText,
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                radius: 5,
+                color: '#fff'
+            });
+        }
+    });
+
+    function animate() {
+        if (!particlesActive) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        projects.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = 0.5;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(p.title, p.x, p.y);
+        });
+
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+            ctx.font = '10px Arial';
+            ctx.fillText(p.title.substring(0, 10), p.x, p.y - 10);
+        });
+
+        animationFrameId = requestAnimationFrame(animate);
+    }
+
+    canvas.onclick = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        particles.forEach(p => {
+            const dist = Math.hypot(p.x - x, p.y - y);
+            if (dist < 20) {
+                openTaskDetails(p.taskId);
+                toggleParticlesView();
+            }
+        });
+    };
+
+    animate();
+}
+
+window.addEventListener('resize', () => {
+    if (particlesActive) {
+        initParticles();
+    }
+});
+
+// ----------------------------------------------------
+// Custom Background Feature
+// ----------------------------------------------------
+document.addEventListener('DOMContentLoaded', function() {
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const bgImageInput = document.getElementById('bgImageInput');
+    const resetBgBtn = document.getElementById('resetBgBtn');
+
+    function loadBackground() {
+        const savedBgColor = localStorage.getItem('customBgColor');
+        const savedBgImage = localStorage.getItem('customBgImage');
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        let defaultBg = isDark ? '#1a1a1a' : '#baffd2';
+
+        if (savedBgImage) {
+            document.body.style.backgroundImage = `url(${savedBgImage})`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+            document.body.style.backgroundColor = 'transparent';
+        } else if (savedBgColor) {
+            document.body.style.backgroundImage = 'none';
+            document.body.style.backgroundColor = savedBgColor;
+            if (bgColorPicker) bgColorPicker.value = savedBgColor;
+        } else {
+            document.body.style.backgroundImage = 'none';
+            document.body.style.backgroundColor = defaultBg;
+        }
+    }
+
+    loadBackground();
+
+    const themeSwitch = document.getElementById('themeSwitch');
+    if (themeSwitch) {
+        themeSwitch.addEventListener('change', loadBackground);
+    }
+
+    if (bgColorPicker) {
+        bgColorPicker.addEventListener('input', function(e) {
+            const color = e.target.value;
+            localStorage.setItem('customBgColor', color);
+            localStorage.removeItem('customBgImage');
+            loadBackground();
+        });
+    }
+
+    if (bgImageInput) {
+        bgImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_SIZE = 1920;
+                    if (width > height && width > MAX_SIZE) {
+                        height *= MAX_SIZE / width;
+                        width = MAX_SIZE;
+                    } else if (height > MAX_SIZE) {
+                        width *= MAX_SIZE / height;
+                        height = MAX_SIZE;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                    try {
+                        localStorage.setItem('customBgImage', dataUrl);
+                        localStorage.removeItem('customBgColor');
+                        loadBackground();
+                    } catch (err) {
+                        alert('Изображение слишком большое для сохранения.');
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (resetBgBtn) {
+        resetBgBtn.addEventListener('click', function() {
+            localStorage.removeItem('customBgColor');
+            localStorage.removeItem('customBgImage');
+            if (bgImageInput) bgImageInput.value = '';
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (bgColorPicker) bgColorPicker.value = isDark ? '#1a1a1a' : '#baffd2';
+
+            loadBackground();
+        });
+    }
+});
