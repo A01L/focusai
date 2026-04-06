@@ -622,3 +622,26 @@ p {
         padding: 15px;
     }
 }
+
+
+[data-theme="dark"] {
+    --text-color: #ffffff;
+    --card-bg: rgba(30, 30, 30, 0.7);
+}
+
+[data-theme="dark"] body {
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .widget-card,
+[data-theme="dark"] .todo-card,
+[data-theme="dark"] .card {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .modal-content {
+    background: var(--card-bg);
+    color: var(--text-color);
+}

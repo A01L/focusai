@@ -26,6 +26,15 @@
                         <path d="M200.003 1.56641V23.1046H194.797V1.56641H200.003Z" fill="#53d881"/>
                         <path d="M176.923 23.1046H171.328L178.595 1.56641H185.526L192.793 23.1046H187.198L182.139 6.99301H181.971L176.923 23.1046ZM176.176 14.6281H187.871V18.5824H176.176V14.6281Z" fill="#53d881"/>
                         </svg>
+
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" id="themeSwitch">
+                            <label class="form-check-label" for="themeSwitch">Тёмная тема</label>
+                        </div>
+                        <button class="btn btn-outline-info w-100 mt-2" onclick="toggleParticlesView()">
+                            <i class="bi bi-stars"></i> Интерактивный вид
+                        </button>
+
                     </div>
                     <div style="width: 100%; padding: 0px 30px 30px 30px; height: 95%;">
                         <div class="form-check form-switch" style="padding-bottom: 15px;">
@@ -232,6 +241,27 @@
                             onclick="downloadBackup()">
                             <i class="bi bi-trash me-2"></i> Удалить текущие данные
                         </button>
+
+                        <!-- Background Customization -->
+                        <div class="mt-4 mb-3" style="border-top: 1px solid var(--text-color); padding-top: 15px;">
+                            <label style="font-weight: 500; margin-bottom: 10px;">Фон приложения:</label>
+
+                            <div class="d-flex align-items-center mb-2">
+                                <label style="flex: 1; margin: 0;">Цвет фона:</label>
+                                <input type="color" id="bgColorPicker" class="form-control form-control-color" style="width: 50px; padding: 0.2rem;" value="#baffd2">
+                            </div>
+
+                            <div class="mb-3">
+                                <label style="display: block; margin-bottom: 5px;">Своя картинка (фон):</label>
+                                <input type="file" id="bgImageInput" class="form-control" accept="image/*" style="font-size: 0.9rem;">
+                                <small class="text-muted" style="font-size: 0.75rem;">Картинка сохранится в браузере. Выбирайте небольшие файлы.</small>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-secondary w-100" id="resetBgBtn" style="border-radius: 10px; font-size: 0.9rem;">
+                                <i class="bi bi-arrow-counterclockwise"></i> Сбросить фон
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 
@@ -603,6 +633,30 @@
             </li>
         </ul>
     </nav>
+
+    <!-- Particles View Container -->
+    <canvas id="particlesCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: none; background: rgba(0,0,0,0.8); cursor: pointer;"></canvas>
+
+    <!-- Task Details Modal -->
+    <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px; background: var(--card-bg); backdrop-filter: blur(10px);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="taskDetailsTitle">Детали задачи</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="taskDetailsDesc" class="form-control" rows="5" placeholder="Описание задачи..."></textarea>
+                    <input type="hidden" id="taskDetailsId">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTaskDetails()">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
